@@ -5,6 +5,7 @@ def convertTimeToSecs(timeStr):
     secs = int(timeStr[colon+1:]) + 60*mins
     return secs
 
+
 def convertSecstoTime(secStr):
     secs = float(secStr)
     mins = secs//60
@@ -15,35 +16,35 @@ def convertSecstoTime(secStr):
         timeStr = str(int(mins))+":0"+str(round(secs,3))
     return timeStr
 
-splits = ["Cap", "Caskade", "Sand", "Lake", "Wood"]
-f = open("results.txt", "r+")
-PB = f.readline()
+splits = ["Cap", "Caskade", "Sand", "Lake", "Wood", "Cloud", "Lost"]
+#f = open("results.txt", "r+")
+#PB = f.readline()
 
-PBsecs = int(convertTimeToSecs(PB))
-print("PB: " + PB.strip())
-print(PBsecs)
+#PBsecs = int(convertTimeToSecs(PB))
+#print("PB: " + PB.strip())
+#print(PBsecs)
 #Times for current run
 splitResults = []
 #Times in overall PB
 PBSplits = []
 #Best ever record for each split
 splitRecords = []
-input("Start")
+a = input("Start")
 prev = time.monotonic()
 first = prev
 
 for kingdom in splits:
     input(kingdom)
-    section = f.readline().strip()
-    if section != kingdom:
-         break
+ #   section = f.readline().strip()
+  #  if section != kingdom:
+   #      break
     #time in overall PB for split
-    PBSectionTime = f.readline().strip()
+  #  PBSectionTime = f.readline().strip()
     #fastest ever time for split
-    splitPB = f.readline().strip()
+   # splitPB = f.readline().strip()
 
-    PBSplits.append(PBSectionTime)
-    splitRecords.append(splitPB)
+    #PBSplits.append(PBSectionTime)
+    #splitRecords.append(splitPB)
     cur = time.monotonic()
     splitTime = cur-prev
     splitResults.append(splitTime)
@@ -51,18 +52,20 @@ for kingdom in splits:
     total = cur-first
     print("Total: " + convertSecstoTime(total))
     
+    
     prev = cur
 record = False
-if int(total) < PBsecs:
-    record = True
+#if int(total) < PBsecs:
+#    record = True
 
     
 
 splitResults = [convertSecstoTime(split) for split in splitResults]
+splitResults.insert(0,convertSecstoTime(total))
 print(total)
 print(splitResults)
-print(PBSplits)
-print(splitRecords)
+#print(PBSplits)
+#print(splitRecords)
 
 with open("raw_results.txt", "a+") as f:
     f.write(str(splitResults)+"\n")
