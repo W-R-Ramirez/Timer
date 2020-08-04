@@ -1,12 +1,18 @@
+# import tkinter
+try:
+    import tkinter as tk
+except ImportError:
+    import Tkinter as tk
 import time
+
 def convertTimeToSecs(timeStr):
     colon = timeStr.find(":")
     mins = int(timeStr[:colon])
-    secs = int(timeStr[colon+1:]) + 60*mins
+    secs = float(timeStr[colon+1:]) + 60*mins
     return secs
 
 
-def convertSecstoTime(secStr):
+def convertSecsToTime(secStr):
     secs = float(secStr)
     mins = secs//60
     secs = secs % 60
@@ -14,58 +20,81 @@ def convertSecstoTime(secStr):
         timeStr = str(int(mins))+":"+str(round(secs,3))
     else:
         timeStr = str(int(mins))+":0"+str(round(secs,3))
+
+        
     return timeStr
 
-splits = ["Cap", "Caskade", "Sand", "Lake", "Wood", "Cloud", "Lost"]
-#f = open("results.txt", "r+")
-#PB = f.readline()
 
-#PBsecs = int(convertTimeToSecs(PB))
-#print("PB: " + PB.strip())
-#print(PBsecs)
-#Times for current run
-splitResults = []
-#Times in overall PB
-PBSplits = []
-#Best ever record for each split
-splitRecords = []
-a = input("Start")
-prev = time.monotonic()
-first = prev
 
-for kingdom in splits:
-    input(kingdom)
- #   section = f.readline().strip()
-  #  if section != kingdom:
-   #      break
-    #time in overall PB for split
-  #  PBSectionTime = f.readline().strip()
-    #fastest ever time for split
-   # splitPB = f.readline().strip()
+                
+class Window:
+    def __init__(self, master):
+        self.time = 0
+        self.splits_completed = 0
+        self.final = False
+        self.started = False
+        self.time_label = tk.Label(master, font="Arial 30", width=25, text="Start")
+        self.time_label.pack()
+        self.splits =  ["Cap", "Caskade", "Sand", "Lake", "Wood", "Cloud", "Lost", "Night Metro", "Day Metro"]
+        self.total_splits = len(self.splits)
+        #Times for current run
+        self.splitResults = []
+        #Times in overall PB
+        self.PBSplits = []
+        #Best ever record for each split
+        self.splitRecords = []
 
-    #PBSplits.append(PBSectionTime)
-    #splitRecords.append(splitPB)
-    cur = time.monotonic()
-    splitTime = cur-prev
-    splitResults.append(splitTime)
-    print(kingdom + " Split: " + convertSecstoTime(str(splitTime)))
-    total = cur-first
-    print("Total: " + convertSecstoTime(total))
+
+
+
+    def refresh_time(self):
+        cur = time.monotonic()
+
+        total = cur-self.first
+        
+        self.time_label.configure(text= "Total: " + convertSecsToTime(total))
+        if not self.final:
+            self.time_label.after(50, self.refresh_time)
+        
+
+    def func(self, event):
+        if self.started:
+            cur = time.monotonic()
+            splitTime = cur-self.prev
+
+            self.prev = cur
+            total = cur - self.first
+            kingdom = self.splits[len(self.splitResults)]
+            self.splitResults.append(splitTime)
+            print(kingdom + " Split: " + convertSecsToTime(str(splitTime)))
+            print("Total: " + convertSecsToTime(total))
+            if len(self.splitResults) == self.total_splits:
+                splitResults = [convertSecsToTime(split) for split in self.splitResults]
+                splitResults.insert(0,convertSecsToTime(total))
+                print(splitResults)
+                self.final = True
+                with open("raw_results.txt", "a+") as f:
+                    f.write(str(splitResults)+"\n")
+
+        else:
+            self.started = True
+            self.prev = time.monotonic()
+            self.first = self.prev
+            self.time_label.after(500, self.refresh_time)
+                
+            
+
+        
+if __name__ == "__main__":
+
     
+    root = tk.Tk()
     
-    prev = cur
-record = False
-#if int(total) < PBsecs:
-#    record = True
+    splits = ["Cap", "Caskade", "Sand", "Lake", "Wood", "Cloud", "Lost", "Night Metro", "Day Metro"]
+
+
+    timer = Window(root)
+    root.bind('<Return>', timer.func)
+    root.mainloop()
 
     
-
-splitResults = [convertSecstoTime(split) for split in splitResults]
-splitResults.insert(0,convertSecstoTime(total))
-print(total)
-print(splitResults)
-#print(PBSplits)
-#print(splitRecords)
-
-with open("raw_results.txt", "a+") as f:
-    f.write(str(splitResults)+"\n")
