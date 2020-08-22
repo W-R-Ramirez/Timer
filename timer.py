@@ -34,7 +34,7 @@ class Timer:
         self.final = False
         self.started = False
 
-        self.splits =  ["Cap", "Caskade", "Sand", "Lake", "Wood", "Cloud", "Lost", "Night Metro", "Day Metro"]
+        self.splits =  ["Cap", "Caskade", "Sand", "Lake", "Wood", "Cloud", "Lost", "Night Metro", "Day Metro", "Snow"]
         self.total_splits = len(self.splits)
         #Times for current run
         self.splitResults = []
@@ -43,7 +43,10 @@ class Timer:
         #Best ever record for each split
         self.splitRecords = []
 
-
+        ##################
+        ## GUI Elements ##
+        ##################
+        
         self.split_time_label = tk.Label(master, font="Arial 30", width=25)
         self.total_time_label = tk.Label(master, font="Arial 30", width=25, text="Start")
         self.undo_button = tk.Button(master, text="Undo", command=self.undo)
@@ -62,7 +65,7 @@ class Timer:
             self.total_time_label.after(75, self.refresh_time)
         
 
-    def func(self, event):
+    def enter(self, event):
         if self.started:
             cur = time.monotonic()
             splitTime = cur-self.prev
@@ -102,7 +105,7 @@ if __name__ == "__main__":
 
 
     timer = Timer(root)
-    root.bind('<Return>', timer.func)
+    root.bind('<Return>', timer.enter)
     root.mainloop()
 
     
