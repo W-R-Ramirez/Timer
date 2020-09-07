@@ -34,7 +34,7 @@ class Timer:
         self.final = False
         self.started = False
 
-        self.splits =  ["Cap", "Caskade", "Sand", "Lake", "Wood", "Cloud", "Lost", "Night Metro", "Day Metro", "Snow"]
+        self.splits =  ["Cap", "Caskade", "Sand", "Lake", "Wood", "Cloud", "Lost", "Night Metro", "Day Metro", "Snow", "Beach", "Luncheon", "Ruined"]
         self.total_splits = len(self.splits)
         #Times for current run
         self.splitResults = []
