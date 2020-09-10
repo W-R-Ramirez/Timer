@@ -24,9 +24,11 @@ def convertSecsToTime(secStr):
         
     return timeStr
 
-def calculate_time(splits, start, finish):
-    return sum([convertTimeToSecs(times) for times in splits[start: finish+1]])
-
+def calculate_time(splits, start, finish, string):
+    if string:
+        return sum([convertTimeToSecs(times) for times in splits[start: finish+1]])
+    else:
+        return sum(splits[start:finish+1])
                 
 class Timer:
     def __init__(self, master):
@@ -72,45 +74,82 @@ class Timer:
         ## GUI Elements ##
         ##################
         
-        self.split_time_label = tk.Label(master, font="Arial 20", width=15)
-        self.total_time_label = tk.Label(master, font="Arial 30", text="Start", width=15)
-        self.cur_split_pb_time = tk.Label(master, font="Arial 15", text="PB: ")
-        self.cur_split_gold_time = tk.Label(master, font="Arial 15", text="Gold: ")
-        self.undo_button = tk.Button(master, text="Undo", command=self.undo)
+        self.split_time_label = tk.Label(master, font="Arial 20", width=20,bg="#ADD8E6")
+        self.total_time_label = tk.Label(master, font="Arial 30", text="Start", width=15,bg="#ADD8E6")
+        self.cur_split_pb_time = tk.Label(master, font="Arial 15",bg="#ADD8E6")
+        self.cur_split_gold_time = tk.Label(master, font="Arial 15",bg="#ADD8E6")
+        self.time_save = tk.Label(master, font="Arial 10",bg="#ADD8E6")
+        self.undo_button = tk.Button(master, text="Undo", command=self.undo,bg="#ADD8E6")
         
-        self.prev_split_label = tk.Label(master, font="Arial 20", width=15, text=self.splits[0])
-        self.prev_split_time_label = tk.Label(master, font="Arial 20", width=15, text=self.PBSplits[1])
-        self.prev_split_diff = tk.Label(master, font="Arial 15", width=20)
+        self.prev_split_label = tk.Label(master, font="Arial 20", width=15, text=self.splits[0],bg="#ADD8E6")
+        self.prev_split_time_label = tk.Label(master, font="Arial 20", width=15, text=self.PBSplits[1],bg="#ADD8E6")
+        self.prev_split_diff = tk.Label(master, font="Arial 15", width=20,bg="#ADD8E6")
         
-        self.cur_split_label = tk.Label(master, font="Arial 20", width=15, text=self.splits[1])
-        self.cur_split_time_label = tk.Label(master, font="Arial 20", width=15, text=convertSecsToTime(calculate_time(self.PBSplits, 1, 2)))
-        self.cur_split_diff = tk.Label(master, font="Arial 15", width=20)
+        self.cur_split_label = tk.Label(master, font="Arial 20", width=15, text=self.splits[1],bg="#ADD8E6")
+        self.cur_split_time_label = tk.Label(master, font="Arial 20", width=15, text=convertSecsToTime(calculate_time(self.PBSplits, 1, 2, True)),bg="#ADD8E6")
+        self.cur_split_diff = tk.Label(master, font="Arial 15", width=20,bg="#ADD8E6")
         
-        self.final_split_label = tk.Label(master, font="Arial 20", width=15, text="Done")
-        self.split_pb = tk.Label(master, font="Arial 20", width=15, text="Split PB: ")
-        self.total_pb = tk.Label(master, font= "Arial 20", width=15, text=self.PBSplits[0])
+        
+        self.final_split_label = tk.Label(master, font="Arial 20", width=15,bg="#ADD8E6")
+        self.split_pb = tk.Label(master, font="Arial 20", width=15, text="Split PB: ",bg="#ADD8E6")
+        self.total_pb = tk.Label(master, font= "Arial 20", width=15, text="PB: " + self.PBSplits[0],bg="#ADD8E6")
+        self.sum_of_best = tk.Label(master, font="Arial 12", width=15, text="SOB: " + self.sumOfBest[0],bg="#ADD8E6")
         
         self.prev_split_label.grid(row=0, column=0)
         self.prev_split_time_label.grid(row=1, column=0)
+        self.prev_split_diff.grid(row=2, column=0)
+        
         self.cur_split_label.grid(row=0, column=1)
         self.cur_split_time_label.grid(row=1, column=1)
-        self.final_split_label.grid(row=0, column=2)
-        self.split_time_label.grid(row=1,column=4)
-        self.total_time_label.grid(row=0,column=4)
+        self.cur_split_diff.grid(row=2, column=1)
+        self.split_time_label.grid(row=0,column=3)
+        self.total_time_label.grid(row=0,column=2)
         self.total_pb.grid(row=1, column=2)
-        self.cur_split_pb_time.grid(row=2, column=3)
-        self.cur_split_gold_time.grid(row=1, column=3)
-        self.undo_button.grid(column=1)
+        self.sum_of_best.grid(row=2, column=2)
+        self.cur_split_pb_time.grid(row=1, column=3)
+        self.cur_split_gold_time.grid(row=2, column=3)
+        self.time_save.grid(row=3, column=3)
+        self.undo_button.grid(row=3, column=1)
+        
     def refresh_time(self):
         if not self.final:
             cur = time.monotonic()
-
+            
             total = cur-self.first
             split = cur-self.prev
             kingdom = self.splits[len(self.splitResults)]
             self.split_time_label.configure(text=kingdom+": " + convertSecsToTime(split))
-            self.total_time_label.configure(text= "Total: " + convertSecsToTime(total))
+            self.total_time_label.configure(text=convertSecsToTime(total))
             self.total_time_label.after(75, self.refresh_time)
+            if len(self.splitResults) == 0:
+                diff = convertTimeToSecs(self.prev_split_time_label.cget("text"))-total
+                if diff > 0:
+                    self.prev_split_diff.configure(text="- " + convertSecsToTime(diff))
+                    if split < float(convertTimeToSecs(self.sumOfBest[1])):
+                        self.prev_split_diff.configure(fg="yellow")
+                    else:
+                        self.prev_split_diff.configure(fg="#57E964")
+                else:
+                    self.prev_split_diff.configure(text="+ " + convertSecsToTime(-diff))
+                    if split < float(convertTimeToSecs(self.sumOfBest[1])):
+                        self.prev_split_diff.configure(fg="yellow")
+                    else:
+                        self.prev_split_diff.configure(fg="red")
+            else:
+                diff = convertTimeToSecs(self.cur_split_time_label.cget("text"))-total
+                if diff > 0:
+                    self.cur_split_diff.configure(text="- " + convertSecsToTime(diff))
+                    if split < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)+1])):
+                        self.cur_split_diff.configure(fg="yellow")
+                    else:
+                        self.cur_split_diff.configure(fg="#57E964")
+                else:
+                    self.cur_split_diff.configure(text="+ " + convertSecsToTime(-diff))
+                    if split < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)+1])):
+                        self.cur_split_diff.configure(fg="yellow")
+                    else:
+                        self.cur_split_diff.configure(fg="red")
+
         
 
     def enter(self, event):
@@ -123,10 +162,19 @@ class Timer:
             kingdom = self.splits[len(self.splitResults)]
             self.splitResults.append(splitTime)
             if len(self.splitResults) > 1:
-                diff = total - calculate_time(self.PBSplits, 1, len(self.splitResults))
+                diff = total - calculate_time(self.PBSplits, 1, len(self.splitResults), True)
                 if diff < 0:
                     final_diff = "-"+convertSecsToTime(-diff)
+                    
+                    if splitTime < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
+                        self.prev_split_diff.configure(fg="yellow")
+                    else:
+                        self.prev_split_diff.configure(fg="#57E964")
                 else:
+                    if splitTime  < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
+                        self.prev_split_diff.configure(fg="yellow")
+                    else:
+                        self.prev_split_diff.configure(fg="#57E964")
                     final_diff = "+"+convertSecsToTime(diff)
 
                 self.prev_split_label.configure(text=self.cur_split_label.cget("text"))
@@ -135,29 +183,32 @@ class Timer:
                 if len(self.splitResults) == self.total_splits:
                     splitResults = [convertSecsToTime(split) for split in self.splitResults]
                     splitResults.insert(0,convertSecsToTime(total))
-                    print(splitResults)
                     self.final = True
                     with open("raw_results.txt", "a+") as f:
                         f.write(str(splitResults)+"\n")
                     with open("results.txt", "a+") as f:
                         f.write(str(splitResults)+"\n")
                 else:
-                    self.cur_split_time_label.configure(text=convertSecsToTime(calculate_time(self.PBSplits, 1, len(self.splitResults)+1)))
+                    self.cur_split_time_label.configure(text=convertSecsToTime(calculate_time(self.PBSplits, 1, len(self.splitResults)+1, True)))
             else:
-                print(total)
-                print(calculate_time(self.PBSplits, 1, 1))
-                diff = total - calculate_time(self.PBSplits, 1, 1)
+                diff = total - calculate_time(self.PBSplits, 1, 1, True)
                 final_diff = 0
                 if diff < 0:
-                    final_diff = "-"+convertSecsToTime(-diff)
+                    final_diff = "- "+convertSecsToTime(-diff)
+                    if splitTime < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
+                        self.prev_split_diff.configure(fg="yellow")
+                    else:
+                        self.prev_split_diff.configure(fg="#57E964")
                 else:
-                    final_diff = convertSecsToTime(diff)
+                    final_diff = "+ " + convertSecsToTime(diff)
+                    if splitTime < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
+                        self.prev_split_diff.configure(fg="yellow")
+                    else:
+                        self.prev_split_diff.configure(fg="red")
 
-                print(final_diff)
             
             self.prev_split_time_label.configure(text=convertSecsToTime(str(total)))
             self.prev_split_diff.configure(text=final_diff)
-            self.prev_split_diff.grid(row=2, column=0)
 
             print(kingdom + " Split: " + convertSecsToTime(str(splitTime)))
             print("Total: " + convertSecsToTime(total))
@@ -172,10 +223,39 @@ class Timer:
         
         self.cur_split_gold_time.configure(text="Gold: " + self.sumOfBest[len(self.splitResults)+1])
         self.cur_split_pb_time.configure(text="PB: " + self.PBSplits[len(self.splitResults)+1])
+        time_save =  convertSecsToTime(convertTimeToSecs(self.PBSplits[len(self.splitResults)+1]) - convertTimeToSecs(self.sumOfBest[len(self.splitResults)+1]))
+        self.time_save.configure(text="Time Save: " + time_save)
+        self.cur_split_diff.configure(text="")
 
 
     def undo(self):
         self.splitResults.pop()
+        self.cur_split_gold_time.configure(text="Gold: " + self.sumOfBest[len(self.splitResults)+1])
+        self.cur_split_pb_time.configure(text="PB: " + self.PBSplits[len(self.splitResults)+1])
+        if self.splitResults:
+            prev_split_total_time =calculate_time(self.splitResults, 0, len(self.splitResults), False)
+            self.prev_split_time_label.configure(text=convertSecsToTime(prev_split_total_time))
+            self.prev_split_label.configure(text=self.splits[len(self.splitResults)-1])
+            self.cur_split_time_label.configure(text=convertSecsToTime(calculate_time(self.PBSplits, 1, len(self.splitResults)+1, True)))
+            pb_prev_split_total_time = calculate_time(self.PBSplits, 1, len(self.splitResults), True)
+            diff = prev_split_total_time - pb_prev_split_total_time
+            if diff < 0:
+                final_diff = "-"+convertSecsToTime(-diff)
+            else:
+                final_diff = convertSecsToTime(diff)
+            self.prev_split_diff.configure(text=final_diff)
+            self.prev_split_label.configure(text=self.splits[len(self.splitResults)-1])
+            self.cur_split_label.configure(text=self.splits[len(self.splitResults)])
+        else:
+            self.prev_split_time_label.configure(text=self.PBSplits[1])
+            self.prev_split_label.configure(text=self.splits[0])
+            self.cur_split_time_label.configure(text=convertSecsToTime(calculate_time(self.PBSplits, 1, 2, True)))
+            self.prev_split_label.configure(text=self.splits[0])
+            self.cur_split_label.configure(text=self.splits[1])
+            self.prev_split_diff.configure(text="")
+
+
+
         self.prev = self.first + sum(self.splitResults)
 
                 
@@ -187,7 +267,7 @@ if __name__ == "__main__":
     
     root = tk.Tk()
 
-
+    root.configure(bg="#ADD8E6")
     timer = Timer(root)
     root.bind('<Return>', timer.enter)
     root.mainloop()
