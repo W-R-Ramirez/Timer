@@ -121,34 +121,17 @@ class Timer:
             self.split_time_label.configure(text=kingdom+": " + convertSecsToTime(split))
             self.total_time_label.configure(text=convertSecsToTime(total))
             self.total_time_label.after(75, self.refresh_time)
-            if len(self.splitResults) == 0:
-                diff = convertTimeToSecs(self.prev_split_time_label.cget("text"))-total
-                if diff > 0:
-                    self.prev_split_diff.configure(text="- " + convertSecsToTime(diff))
-                    if split < float(convertTimeToSecs(self.sumOfBest[1])):
-                        self.prev_split_diff.configure(fg="yellow")
-                    else:
-                        self.prev_split_diff.configure(fg="#57E964")
-                else:
-                    self.prev_split_diff.configure(text="+ " + convertSecsToTime(-diff))
-                    if split < float(convertTimeToSecs(self.sumOfBest[1])):
-                        self.prev_split_diff.configure(fg="yellow")
-                    else:
-                        self.prev_split_diff.configure(fg="red")
-            else:
-                diff = convertTimeToSecs(self.cur_split_time_label.cget("text"))-total
+            diff = calculate_time(self.PBSplits, 1, len(self.splitResults)+1, True) - total
+            if self.splitResults:
                 if diff > 0:
                     self.cur_split_diff.configure(text="- " + convertSecsToTime(diff))
-                    if split < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)+1])):
-                        self.cur_split_diff.configure(fg="yellow")
-                    else:
-                        self.cur_split_diff.configure(fg="#57E964")
                 else:
-                    self.cur_split_diff.configure(text="+ " + convertSecsToTime(-diff))
-                    if split < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)+1])):
-                        self.cur_split_diff.configure(fg="yellow")
-                    else:
-                        self.cur_split_diff.configure(fg="red")
+                    self.cur_split_diff.configure(text=convertSecsToTime(-diff))
+            else:
+                if diff > 0:
+                    self.prev_split_diff.configure(text="- "+ convertSecsToTime(diff))
+                else:
+                    self.prev_split_diff.configure(text=convertSecsToTime(-diff))
 
         
 
@@ -168,13 +151,17 @@ class Timer:
                     
                     if splitTime < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
                         self.prev_split_diff.configure(fg="yellow")
-                    else:
+                    elif splitTime < float(convertTimeToSecs(self.PBSplits[len(self.splitResults)])):
                         self.prev_split_diff.configure(fg="#57E964")
+                    else:
+                        self.prev_split_diff.configure(fg="red")
                 else:
                     if splitTime  < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
                         self.prev_split_diff.configure(fg="yellow")
-                    else:
+                    elif splitTime < float(convertTimeToSecs(self.PBSplits[len(self.splitResults)])):
                         self.prev_split_diff.configure(fg="#57E964")
+                    else:
+                        self.prev_split_diff.configure(fg="red")
                     final_diff = "+"+convertSecsToTime(diff)
 
                 self.prev_split_label.configure(text=self.cur_split_label.cget("text"))
@@ -195,14 +182,18 @@ class Timer:
                 final_diff = 0
                 if diff < 0:
                     final_diff = "- "+convertSecsToTime(-diff)
-                    if splitTime < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
+                    if splitTime  < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
                         self.prev_split_diff.configure(fg="yellow")
-                    else:
+                    elif splitTime < float(convertTimeToSecs(self.PBSplits[len(self.splitResults)])):
                         self.prev_split_diff.configure(fg="#57E964")
+                    else:
+                        self.prev_split_diff.configure(fg="red")
                 else:
                     final_diff = "+ " + convertSecsToTime(diff)
-                    if splitTime < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
+                    if splitTime  < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
                         self.prev_split_diff.configure(fg="yellow")
+                    elif splitTime < float(convertTimeToSecs(self.PBSplits[len(self.splitResults)])):
+                        self.prev_split_diff.configure(fg="#57E964")
                     else:
                         self.prev_split_diff.configure(fg="red")
 
@@ -246,6 +237,7 @@ class Timer:
             self.prev_split_diff.configure(text=final_diff)
             self.prev_split_label.configure(text=self.splits[len(self.splitResults)-1])
             self.cur_split_label.configure(text=self.splits[len(self.splitResults)])
+            self.cur_split_diff.configure(text="")
         else:
             self.prev_split_time_label.configure(text=self.PBSplits[1])
             self.prev_split_label.configure(text=self.splits[0])
@@ -255,7 +247,8 @@ class Timer:
             self.prev_split_diff.configure(text="")
 
 
-
+        time_save =  convertSecsToTime(convertTimeToSecs(self.PBSplits[len(self.splitResults)+1]) - convertTimeToSecs(self.sumOfBest[len(self.splitResults)+1]))
+        self.time_save.configure(text="Time Save: " + time_save)
         self.prev = self.first + sum(self.splitResults)
 
                 
