@@ -79,6 +79,7 @@ class Timer:
         self.cur_split_pb_time = tk.Label(master, font="Arial 15",bg="#ADD8E6")
         self.cur_split_gold_time = tk.Label(master, font="Arial 15",bg="#ADD8E6")
         self.time_save = tk.Label(master, font="Arial 10",bg="#ADD8E6")
+
         self.undo_button = tk.Button(master, text="Undo", command=self.undo,bg="#ADD8E6")
         
         self.prev_split_label = tk.Label(master, font="Arial 20", width=15, text=self.splits[0],bg="#ADD8E6")
@@ -94,6 +95,7 @@ class Timer:
         self.split_pb = tk.Label(master, font="Arial 20", width=15, text="Split PB: ",bg="#ADD8E6")
         self.total_pb = tk.Label(master, font= "Arial 20", width=15, text="PB: " + self.PBSplits[0],bg="#ADD8E6")
         self.sum_of_best = tk.Label(master, font="Arial 12", width=15, text="SOB: " + self.sumOfBest[0],bg="#ADD8E6")
+        self.best_possible = tk.Label(master, font="Arial 12", bg="#ADD8E6",  text="Best Possible Time: " + self.sumOfBest[0])
         
         self.prev_split_label.grid(row=0, column=0)
         self.prev_split_time_label.grid(row=1, column=0)
@@ -106,6 +108,7 @@ class Timer:
         self.total_time_label.grid(row=0,column=2)
         self.total_pb.grid(row=1, column=2)
         self.sum_of_best.grid(row=2, column=2)
+        self.best_possible.grid(row=3, column=2)
         self.cur_split_pb_time.grid(row=1, column=3)
         self.cur_split_gold_time.grid(row=2, column=3)
         self.time_save.grid(row=3, column=3)
@@ -152,7 +155,7 @@ class Timer:
                     if splitTime < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
                         self.prev_split_diff.configure(fg="yellow")
                     elif splitTime < float(convertTimeToSecs(self.PBSplits[len(self.splitResults)])):
-                        self.prev_split_diff.configure(fg="#57E964")
+                        self.prev_split_diff.configure(fg="#437C17")
                     else:
                         self.prev_split_diff.configure(fg="red")
                 else:
@@ -185,7 +188,7 @@ class Timer:
                     if splitTime  < float(convertTimeToSecs(self.sumOfBest[len(self.splitResults)])):
                         self.prev_split_diff.configure(fg="yellow")
                     elif splitTime < float(convertTimeToSecs(self.PBSplits[len(self.splitResults)])):
-                        self.prev_split_diff.configure(fg="#57E964")
+                        self.prev_split_diff.configure(fg="#437C17")
                     else:
                         self.prev_split_diff.configure(fg="red")
                 else:
@@ -200,7 +203,8 @@ class Timer:
             
             self.prev_split_time_label.configure(text=convertSecsToTime(str(total)))
             self.prev_split_diff.configure(text=final_diff)
-
+            self.best_possible.configure(text="Best Possible Time: " + convertSecsToTime(calculate_time(self.sumOfBest, len(self.splitResults)+1, len(self.sumOfBest), True) + total))
+                                                                                      
             print(kingdom + " Split: " + convertSecsToTime(str(splitTime)))
             print("Total: " + convertSecsToTime(total))
 
@@ -211,7 +215,7 @@ class Timer:
             self.first = self.prev
             self.total_time_label.after(50, self.refresh_time)
 
-        
+
         self.cur_split_gold_time.configure(text="Gold: " + self.sumOfBest[len(self.splitResults)+1])
         self.cur_split_pb_time.configure(text="PB: " + self.PBSplits[len(self.splitResults)+1])
         time_save =  convertSecsToTime(convertTimeToSecs(self.PBSplits[len(self.splitResults)+1]) - convertTimeToSecs(self.sumOfBest[len(self.splitResults)+1]))
