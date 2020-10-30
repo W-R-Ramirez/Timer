@@ -85,6 +85,7 @@ class Timer:
         self.prev_split_label = tk.Label(master, font="Arial 20", width=15, text=self.splits[0],bg="#ADD8E6")
         self.prev_split_time_label = tk.Label(master, font="Arial 20", width=15, text=self.PBSplits[1],bg="#ADD8E6")
         self.prev_split_diff = tk.Label(master, font="Arial 15", width=20,bg="#ADD8E6")
+        self.prev_split_time = tk.Label(master, font="Arial 15", width=20,bg="#ADD8E6")
         
         self.cur_split_label = tk.Label(master, font="Arial 20", width=15, text=self.splits[1],bg="#ADD8E6")
         self.cur_split_time_label = tk.Label(master, font="Arial 20", width=15, text=convertSecsToTime(calculate_time(self.PBSplits, 1, 2, True)),bg="#ADD8E6")
@@ -100,6 +101,7 @@ class Timer:
         self.prev_split_label.grid(row=0, column=0)
         self.prev_split_time_label.grid(row=1, column=0)
         self.prev_split_diff.grid(row=2, column=0)
+        self.prev_split_time.grid(row=3, column=0)
         
         self.cur_split_label.grid(row=0, column=1)
         self.cur_split_time_label.grid(row=1, column=1)
@@ -202,6 +204,7 @@ class Timer:
 
             
             self.prev_split_time_label.configure(text=convertSecsToTime(str(total)))
+            self.prev_split_time.configure(text=convertSecsToTime(str(splitTime)))
             self.prev_split_diff.configure(text=final_diff)
             self.best_possible.configure(text="Best Possible Time: " + convertSecsToTime(calculate_time(self.sumOfBest, len(self.splitResults)+1, len(self.sumOfBest), True) + total))
                                                                                       
