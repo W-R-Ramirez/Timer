@@ -15,12 +15,22 @@ def convertTimeToSecs(timeStr):
 def convertSecsToTime(secStr):
     secs = float(secStr)
     mins = secs//60
+    hours = mins//60
+    mins = mins - hours*60
     secs = secs % 60
-    if secs >= 10:
-        timeStr = str(int(mins))+":"+str(round(secs,3))
+    if hours == 0:
+        if secs >= 10:
+            timeStr = str(int(mins)) + ":" + str(round(secs,3))
+        else:
+            timeStr = str(int(mins)) + ":0" + str(round(secs,3))
     else:
-        timeStr = str(int(mins))+":0"+str(round(secs,3))
+        if secs >= 10:
+            timeStr = str(int(hours)) + ":" + str(int(mins)) + ":" + str(round(secs,3))
+        else:
+            timeStr = str(int(hours)) + ":" + str(int(mins)) + ":0" + str(round(secs,3))
 
+        
+    return timeStr
         
     return timeStr
 
