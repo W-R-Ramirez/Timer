@@ -35,6 +35,7 @@ class Timer:
         self.time = 0
         self.started = False
         self.final = False
+        self.finished = False
 
         self.cur_run = Run("raw_results.txt", "SMO Any%")
 
@@ -65,36 +66,70 @@ class Timer:
         self.total_time_label = tk.Label(master, font="Arial 30", text="Start", width=10,bg="#ADD8E6")
         self.total_time_label.grid(row=self.cur_run.total_splits+1, column=2, sticky=tk.E)
 
+        sumOfBest = convertSecsToTime(self.cur_run.sumOfBest[0])
+        self.sum_of_best = tk.Label(master, font="Arial 15", bg="#ADD8E6", text="Sum of Best:")
+        self.sum_of_best_time = tk.Label(master, font="Arial 15", bg="#ADD8E6", text=sumOfBest)
+        self.best_possible = tk.Label(master, font= "Arial 15", bg="#ADD8E6", text="Best Possible Time:")
+        self.best_possible_time = tk.Label(master, font="Arial 15", bg="#ADD8E6", text=sumOfBest)
+        self.sum_of_best.grid(row=self.cur_run.total_splits+2, column=1, sticky=tk.E)
+        self.sum_of_best_time.grid(row=self.cur_run.total_splits+2, column=2)
+        self.best_possible.grid(row=self.cur_run.total_splits+3, column=1, sticky=tk.E)
+        self.best_possible_time.grid(row=self.cur_run.total_splits+3, column=2)
+
+
+        self.cur_seg = tk.Label(master, font="Arial 15", text="Current Segment:", bg="#ADD8E6")
+        self.cur_seg_time = tk.Label(master, font="Arial 15", bg="#ADD8E6")
         self.prev_seg = tk.Label(master, font="Arial 15", text="Prev Segment", bg="#ADD8E6")
         self.prev_seg_time = tk.Label(master, font="Arial 15", bg="#ADD8E6")
-        self.prev_seg.grid(row=self.cur_run.total_splits+2, column=1, sticky=tk.E)
-        self.prev_seg_time.grid(row=self.cur_run.total_splits+2, column=2, sticky=tk.E)
-        
+        self.pb = tk.Label(master, font="Arial 15", bg="#ADD8E6", text="PB:")
+        self.pb_time = tk.Label(master, font="Arial 15", bg="#ADD8E6")
+        self.gold = tk.Label(master, font="Arial 15",  bg="#ADD8E6", text="Gold: ")
+        self.gold_time = tk.Label(master, font="Arial 15", bg="#ADD8E6")
+        self.time_save = tk.Label(master, font="Arial 10", text="Time save:", bg="#ADD8E6")
+        self.time_save_time = tk.Label(master, font="Arial 10",  bg="#ADD8E6")
+
+
+
+        self.undo_button = tk.Button(master, text="Undo", command=self.undo,bg="#ADD8E6")
+        self.undo_button.grid(row=self.cur_run.total_splits+1, column=0)
             
 
     def refresh_time(self):
-        if not self.final:
+        if not self.finished and self.started:
             cur = time.monotonic()
             total = cur-self.first
             split = cur-self.prev
-
-            self.total_time_label.configure(text=convertSecsToTime(total))
+            self.cur_seg_time.configure(text=convertSecsToTime(split), bg="#ADD8E6")
+            self.total_time_label.configure(text=convertSecsToTime(total), bg="#ADD8E6")
             self.total_time_label.after(75, self.refresh_time)
+
+    def undo(self):
+        self.splitResults.pop()
+        self.split_elements[len(self.splitResults)*3+2].configure(text=convertSecsToTime(calculate_total_time(self.cur_run.PBSplits, 1, len(self.splitResults)+1)))
+        self.split_elements[len(self.splitResults)*3+1].configure(text="")
+        
         
         
     def enter(self, event):
-        if self.started and not self.final:
+        if self.finished:
+            pass
+        elif self.started:
             cur = time.monotonic()
             splitTime = round(cur-self.prev,3)
             self.prev = cur
             total = round(cur - self.first,3)
-            self.split_elements[len(self.splitResults)*3+2].configure(text=convertSecsToTime(total))
             next_diff = self.split_elements[len(self.splitResults)*3+1]
-            
+
+            self.prev_seg.grid(row=self.cur_run.total_splits+8, column=1, sticky=tk.E)
+            self.prev_seg_time.grid(row=self.cur_run.total_splits+8, column=2)
+            self.split_elements[len(self.splitResults)*3+2].configure(text=convertSecsToTime(total))
+
             self.splitResults.append(splitTime)
+            self.best_possible_time.configure(text=convertSecsToTime(calculate_total_time(self.cur_run.sumOfBest, len(self.splitResults)+1, len(self.cur_run.sumOfBest))+total))
             diff =  total - calculate_total_time(self.cur_run.PBSplits, 1, len(self.splitResults))
-           
-            
+
+       
+
             if diff > 0:
                 next_diff.configure(text="+"+convertSecsToTime(diff))
             else:
@@ -113,21 +148,45 @@ class Timer:
             else:
                 next_diff.configure(fg="red")
 
-            if len(self.splitResults) == self.cur_run.total_splits:
-                print("Happeniong")
-                self.final = True
+            if self.final:
+                self.finished = True
                 self.splitResults.insert(0, total)
                 with open("raw_results.txt", "a+") as f:
                     f.write(str(self.splitResults)+"\n")
                 splitResults = [convertSecsToTime(split) for split in self.splitResults]
                 with open("results.txt", "a+") as f:
                     f.write(str(splitResults)+"\n")
-        elif self.final:
-            pass
+            else:
+                cur_seg_pb = self.cur_run.PBSplits[len(self.splitResults)+1]
+                cur_seg_gold = self.cur_run.sumOfBest[len(self.splitResults)+1]
+                self.pb_time.configure(text=convertSecsToTime(cur_seg_pb))
+                self.gold_time.configure(text=convertSecsToTime(cur_seg_gold))
+                self.time_save_time.configure(text=convertSecsToTime(cur_seg_pb-cur_seg_gold))
+            if len(self.splitResults) == self.cur_run.total_splits-1:
+                self.final = True
+                
+
         else:
             self.started = True
             self.prev = time.monotonic()
             self.first = self.prev
+
+
+            self.cur_seg.grid(row=self.cur_run.total_splits+4, column=1, sticky=tk.E)
+            self.cur_seg_time.grid(row=self.cur_run.total_splits+4, column=2)
+            self.pb.grid(row=self.cur_run.total_splits+5, column=1, sticky=tk.E)
+            self.pb_time.grid(row=self.cur_run.total_splits+5, column=2)
+            self.gold.grid(row=self.cur_run.total_splits+6, column=1, sticky=tk.E)
+            self.gold_time.grid(row=self.cur_run.total_splits+6, column=2)
+            self.time_save.grid(row=self.cur_run.total_splits+7, column=1, sticky=tk.E)
+            self.time_save_time.grid(row=self.cur_run.total_splits+7, column=2)
+
+            
+            cur_seg_pb = self.cur_run.PBSplits[len(self.splitResults)+1]
+            cur_seg_gold = self.cur_run.sumOfBest[len(self.splitResults)+1]
+            self.pb_time.configure(text=convertSecsToTime(cur_seg_pb))
+            self.gold_time.configure(text=convertSecsToTime(cur_seg_gold))
+            self.time_save_time.configure(text=convertSecsToTime(cur_seg_pb-cur_seg_gold))
             self.total_time_label.after(50, self.refresh_time)
 
 
@@ -146,7 +205,6 @@ class Run:
 
         with open(prev_runs, "r+") as f:
             for splits in f:
-                print(splits)
                 splits = splits[1:-2].split(",")
                 total = float(splits[0])
                 if total < self.pb:
@@ -193,10 +251,7 @@ class Segment:
 
 
 if __name__ == "__main__":
-
-    
     root = tk.Tk()
-
     root.configure(bg="#ADD8E6")
     timer = Timer(root)
     root.bind('<Return>', timer.enter)
