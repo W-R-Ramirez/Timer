@@ -21,6 +21,8 @@ def convertSecsToTime(secStr):
             timeStr = str(int(hours)) + ":" + str(int(mins)) + ":" + str(round(secs,3))
         elif secs >= 10:
             timeStr = str(int(hours)) + ":0" + str(int(mins)) + ":" + str(round(secs,3))
+        elif mins >= 10:
+            timeStr = str(int(hours)) + ":" + str(int(mins)) + ":0" + str(round(secs,3))
         else:
             timeStr =  str(int(hours)) + ":0" + str(int(mins)) + ":0" + str(round(secs,3))
 
@@ -104,7 +106,12 @@ class Timer:
             self.total_time_label.after(75, self.refresh_time)
 
     def undo(self):
+        if not self.splitResults:
+            self.prev=self.first
+        else:
+            self.prev = self.prev-self.splitResults[len(self.splitResults)-1]
         self.splitResults.pop()
+        cur = time.monotonic()
         self.split_elements[len(self.splitResults)*3+2].configure(text=convertSecsToTime(calculate_total_time(self.cur_run.PBSplits, 1, len(self.splitResults)+1)))
         self.split_elements[len(self.splitResults)*3+1].configure(text="")
         
