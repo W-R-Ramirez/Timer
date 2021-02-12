@@ -1,4 +1,4 @@
-# import tkinter
+1# import tkinter
 try:
     import tkinter as tk
 except ImportError:
@@ -34,12 +34,14 @@ def calculate_total_time(splits, start, finish):
 
 class Timer:
     def __init__(self, master):
+        self.start_run("SMO Any%", master)
+    def start_run(self, run, master):
         self.time = 0
         self.started = False
         self.final = False
         self.finished = False
 
-        self.cur_run = Run("raw_results.txt", "SMO Any%")
+        self.cur_run = Run("raw_results.txt", run)
 
         #Times for current run
         self.splitResults = []
@@ -209,9 +211,10 @@ class Run:
         self.sumOfBest = [self.pb]*(len(self.splits)+1)
         #Times in overall PB
         self.PBSplits = [self.pb]*len(self.splits)
-
+        new_run = True
         with open(prev_runs, "r+") as f:
             for splits in f:
+                new_run = False
                 splits = splits[1:-2].split(",")
                 total = float(splits[0])
                 if total < self.pb:
@@ -223,14 +226,15 @@ class Run:
                     if time  < self.sumOfBest[i]:
                         self.sumOfBest[i] = time
 
+        if new_run:
+            self.PBSplits = [0]*(len(self.splits)+1)
+            self.sumOfBest = [0]*(len(self.splits)+1)
 
-        print(convertSecsToTime(self.pb))
-        print([convertSecsToTime(split) for split in self.PBSplits])
+
         self.sumOfBest[0] = 0
         sumOfBest = sum(self.sumOfBest)
         self.sumOfBest[0] = sumOfBest
-        print([convertSecsToTime(split) for split in self.sumOfBest])
-        print(self.sumOfBest)
+
 
         self.loadSegments()
 
