@@ -4,6 +4,9 @@ try:
 except ImportError:
     import Tkinter as tk
 import time
+from tkinter import Listbox, Scrollbar
+
+
 
 def convertSecsToTime(secStr):
     secs = float(secStr)
@@ -34,14 +37,14 @@ def calculate_total_time(splits, start, finish):
 
 class Timer:
     def __init__(self, master):
-        self.start_run("SMO Any%", master)
+        self.start_run("SMO Darker Side", master)
     def start_run(self, run, master):
         self.time = 0
         self.started = False
         self.final = False
         self.finished = False
-
-        self.cur_run = Run("raw_results.txt", run)
+        self.title = run
+        self.cur_run = Run("darker_side_raw_results.txt", run)
 
         #Times for current run
         self.splitResults = []
@@ -52,18 +55,28 @@ class Timer:
         ##################
         self.split_elements = {}
         self.split_info = {}
+        self.title_label = tk.Label(master, font="Arial 15", text=self.title, bg="#ADD8E6")
+        self.title_label.grid(row=0, column=1, sticky=tk.E)
         if self.cur_run.total_splits > 18:
-            pass
+            for i in range(self.cur_run.total_splits):
+                self.split_info[i] = [self.cur_run.splits[i], convertSecsToTime(calculate_total_time(self.cur_run.PBSplits, 1, i+1))]
+                self.split_elements[i*3] = tk.Label(master, font="Arial 20", text=self.cur_run.splits[i], bg="#ADD8E6", width=10)
+                self.split_elements[i*3].grid(row=i+1, column=0, sticky=tk.W)
+                self.split_elements[i*3+1] = tk.Label(master, font="Arial 15", text="", bg="#ADD8E6", width=10)
+                self.split_elements[i*3+1].grid(row=i+1, column=1)
+                self.split_elements[i*3+2] = tk.Label(master, font="Arial 20", text=convertSecsToTime(calculate_total_time(self.cur_run.PBSplits, 1, i+1)),bg="#ADD8E6", width=10)
+                self.split_elements[i*3+2].grid(row=i+1, column=2, sticky=tk.E)
+
         else:
             for i in range(self.cur_run.total_splits):
                 self.split_info[i] = [self.cur_run.splits[i], convertSecsToTime(calculate_total_time(self.cur_run.PBSplits, 1, i+1))]
                 
                 self.split_elements[i*3] = tk.Label(master, font="Arial 20", text=self.cur_run.splits[i], bg="#ADD8E6", width=10)
-                self.split_elements[i*3].grid(row=i, column=0, sticky=tk.W)
+                self.split_elements[i*3].grid(row=i+1, column=0, sticky=tk.W)
                 self.split_elements[i*3+1] = tk.Label(master, font="Arial 15", text="", bg="#ADD8E6", width=10)
-                self.split_elements[i*3+1].grid(row=i, column=1)
+                self.split_elements[i*3+1].grid(row=i+1, column=1)
                 self.split_elements[i*3+2] = tk.Label(master, font="Arial 20", text=convertSecsToTime(calculate_total_time(self.cur_run.PBSplits, 1, i+1)),bg="#ADD8E6", width=10)
-                self.split_elements[i*3+2].grid(row=i, column=2, sticky=tk.E)
+                self.split_elements[i*3+2].grid(row=i+1, column=2, sticky=tk.E)
 
         
 
@@ -153,17 +166,17 @@ class Timer:
             if splitTime < self.cur_run.sumOfBest[len(self.splitResults)]:
                 next_diff.configure(fg="yellow")
             elif splitTime < self.cur_run.PBSplits[len(self.splitResults)]:
-                next_diff.configure(fg="#57E964")
+                next_diff.configure(fg="#4C9A2A")
             else:
                 next_diff.configure(fg="red")
 
             if self.final:
                 self.finished = True
                 self.splitResults.insert(0, total)
-                with open("raw_results.txt", "a+") as f:
+                with open("darker_side_raw_results.txt", "a+") as f:
                     f.write(str(self.splitResults)+"\n")
                 splitResults = [convertSecsToTime(split) for split in self.splitResults]
-                with open("results.txt", "a+") as f:
+                with open("darker_side_results.txt", "a+") as f:
                     f.write(str(splitResults)+"\n")
             else:
                 cur_seg_pb = self.cur_run.PBSplits[len(self.splitResults)+1]
@@ -202,17 +215,15 @@ class Timer:
 class Run:
     def __init__(self, prev_runs, name):
         self.name = name
-        
-        self.splits =  ["Cap", "Caskade", "Sand", "Lake", "Wood", "Cloud", "Lost", "Night Metro", "Day Metro", "Snow", "Beach", "Luncheon", "Ruined", "Bunnies", "Bowsers", "Moon"]
-        self.total_splits = len(self.splits)
-
         self.pb = 9999999999999999999
-        #Best ever record for each split
-        self.sumOfBest = [self.pb]*(len(self.splits)+1)
-        #Times in overall PB
-        self.PBSplits = [self.pb]*len(self.splits)
         new_run = True
         with open(prev_runs, "r+") as f:
+            self.splits = f.readline().split(",")[1:]
+            self.total_splits = len(self.splits)
+            #Best ever record for each split
+            self.sumOfBest = [self.pb]*(len(self.splits)+1)
+            #Times in overall PB
+            self.PBSplits = [self.pb]*len(self.splits)
             for splits in f:
                 new_run = False
                 splits = splits[1:-2].split(",")
@@ -235,6 +246,8 @@ class Run:
         sumOfBest = sum(self.sumOfBest)
         self.sumOfBest[0] = sumOfBest
 
+        print(self.PBSplits)
+        print(self.sumOfBest)
 
         self.loadSegments()
 
