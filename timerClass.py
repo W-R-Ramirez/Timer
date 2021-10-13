@@ -1,11 +1,37 @@
-1# import tkinter
+# import tkinter
 try:
     import tkinter as tk
 except ImportError:
     import Tkinter as tk
+from os import listdir
 import time
 
+class Splash:
+    def __init__(self, master) -> None:
+        self.master = master
+        self.chooseRun = tk.Button(master, text="Select Splits",bg="#ADD8E6", command=self.selectRun)
+        self.makeNew = tk.Button(master, text="Create New Splits", bg="#ADD8E6", command=self.newRun)
+        self.chooseRun.grid()
+        self.makeNew.grid()
 
+    def selectRun(self):
+        self.chooseRun.grid_forget()
+        self.makeNew.grid_forget()
+        runs = self.getRuns()
+        for i in range(len(runs)):
+            self.run = tk.Button(self.master, text=runs[i], bg="#ADD8E6", command=lambda i=i: self.startRun(runs[i]))
+            self.run.grid()
+    def getRuns(self):
+        return listdir("splits")
+    def newRun(self):
+        pass
+    def startRun(self, run):
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        print(Timer)
+        timer = Timer(run, self.master)
+        self.master.bind('<Return>', timer.enter)
+        self.master.bind('m', timer.skip)
 
 def convertSecsToTime(secStr):
     secs = float(secStr)
@@ -37,9 +63,10 @@ def calculate_total_time(splits, start, finish):
     except:
         print(splits[start:finish+1])
 
-class Timer:
+class Timer(Splash):
     def __init__(self, runName, master):
         self.runName = runName
+        self.master = master
         self.start_run(master)
     def start_run(self, master):
         self.time = 0
@@ -103,6 +130,9 @@ class Timer:
 
         self.undo_button = tk.Button(master, text="Undo", command=self.undo,bg="#ADD8E6")
         self.undo_button.grid(row=self.cur_run.total_splits+1, column=0)
+
+        self.exit_button = tk.Button(master, text="Exit", command=self.exit, bg="#ADD8E6")
+        self.exit_button.grid(row=self.cur_run.total_splits+2, column=0)
             
 
     def refresh_time(self):
@@ -114,6 +144,12 @@ class Timer:
             self.total_time_label.configure(text=convertSecsToTime(total), bg="#ADD8E6")
             self.total_time_label.after(75, self.refresh_time)
 
+
+    def exit(self):
+        print("EXIT")
+        for widget in self.master.winfo_children():
+            widget.destroy()
+        super().__init__(self.master)
     def undo(self):
         if not self.splitResults:
             self.prev=self.first
@@ -206,6 +242,8 @@ class Timer:
     def skip(self):
         print('fads')
         self.prev_skipped = True
+
+    
         
 
 

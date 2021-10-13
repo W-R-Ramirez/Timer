@@ -29,9 +29,10 @@ class Splash:
     def startRun(self, run):
         for widget in self.master.winfo_children():
             widget.destroy()
-        
+        print(Timer)
         timer = Timer(run, self.master)
         self.master.bind('<Return>', timer.enter)
+        self.master.bind('m', timer.skip)
 
 if __name__ == "__main__":
     root = tk.Tk()
