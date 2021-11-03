@@ -159,7 +159,15 @@ class Timer(Splash):
         cur = time.monotonic()
         self.split_elements[len(self.splitResults)*3+2].configure(text=convertSecsToTime(calculate_total_time(self.cur_run.PBSplits, 1, len(self.splitResults)+1)))
         self.split_elements[len(self.splitResults)*3+1].configure(text="")
-        
+        cur_seg_pb = self.cur_run.PBSplits[len(self.splitResults)+1]
+        cur_seg_gold = self.cur_run.sumOfBest[len(self.splitResults)+1]
+        self.pb_time.configure(text=convertSecsToTime(cur_seg_pb))
+        self.gold_time.configure(text=convertSecsToTime(cur_seg_gold))
+        self.time_save_time.configure(text=convertSecsToTime(cur_seg_pb-cur_seg_gold))
+
+        total = round(self.prev-self.first, 3)
+        self.best_possible_time.configure(text=convertSecsToTime(calculate_total_time(self.cur_run.sumOfBest, len(self.splitResults)+1, len(self.cur_run.sumOfBest))+total))
+
         
         
     def enter(self, event):
@@ -196,7 +204,7 @@ class Timer(Splash):
             if splitTime < self.cur_run.sumOfBest[len(self.splitResults)]:
                 next_diff.configure(fg="yellow")
             elif splitTime < self.cur_run.PBSplits[len(self.splitResults)]:
-                next_diff.configure(fg="#57E964")
+                next_diff.configure(fg="#4C9A2A")
             else:
                 next_diff.configure(fg="red")
 
@@ -324,8 +332,6 @@ class Segment:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.configure(bg="#ADD8E6")
-    timer = Timer("SMO", "World Peace", root)
-    root.bind('<Return>', timer.enter)
-    root.bind('m', timer.skip)
+    root.configure(bg="#ADD8E6", width=100)
+    timer = Splash(root)
     root.mainloop()
